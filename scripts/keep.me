@@ -1,0 +1,58 @@
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Convertendo as datas para garantir o formato correto
+data['date'] = pd.to_datetime(data['date'])
+
+# Resumo inicial por tendências temporais: agregação por mês
+data['month_year'] = data['date'].dt.to_period('M')
+sales_by_month = data.groupby('month_year')['total_price'].sum()
+
+# Discrepâncias: Verificando possíveis outliers em quantidade e descontos
+quantity_outliers = data[['quantity']].boxplot(return_type='dict')
+discount_outliers = data[['discount_value']].boxplot(return_type='dict')
+
+# Correlação: Matriz entre variáveis numéricas
+corr_matrix = data[['quantity', 'unit_price', 'total_price', 'discount_value']].corr()
+
+# Segmentação: Vendas por país e site
+sales_by_country = data.groupby('delivery_country')['total_price'].sum()
+sales_by_site = data.groupby('site')['total_price'].sum()
+
+# Visualização
+plt.figure(figsize=(16, 12))
+
+# Tendências temporais
+plt.subplot(2, 2, 1)
+sales_by_month.plot(kind='bar', color='skyblue', edgecolor='black')
+plt.title('Vendas por Mês (Tendências Temporais)', fontsize=14)
+plt.xlabel('Mês/Ano')
+plt.ylabel('Total de Vendas ($)')
+plt.xticks(rotation=45)
+
+# Discrepâncias em Quantidade
+plt.subplot(2, 2, 2)
+sns.boxplot(data=data, y='quantity', palette='Blues')
+plt.title('Discrepâncias em Quantidade Vendida', fontsize=14)
+
+# Correlação entre Variáveis
+plt.subplot(2, 2, 3)
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Matriz de Correlação', fontsize=14)
+
+# Segmentação por País
+plt.subplot(2, 2, 4)
+sales_by_country.plot(kind='bar', color='green', edgecolor='black')
+plt.title('Vendas por País', fontsize=14)
+plt.xlabel('País')
+plt.ylabel('Total de Vendas ($)')
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()
+
+# Segmentação adicional: Vendas por Site
+sales_by_site.plot(kind='pie', autopct='%1.1f%%', startangle=90, colors=sns.color_palette('Set2'))
+plt.title('Distribuição de Vendas por Site', fontsize=14)
+plt.ylabel('')
+plt.show()
